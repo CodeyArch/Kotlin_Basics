@@ -1,15 +1,15 @@
 fun main() {
     var str = "_________"
-    printboard(str)
+    printBoard(str)
     var player = "X"
     do {
         str = getUserInput(str, player) // Coordinates
         player = togglePlayer(player) // switches from X to O and O to X
-        printboard(str) // prints the current board
+        printBoard(str) // prints the current board
         val gameOver = checkState(str) // Is the game over yet? Who knows!
     } while(!gameOver) //ends the game
 }
-fun printboard(str: String){
+fun printBoard(str: String){
     val charArray = str.toCharArray() // Who needs mutable lists eh
     println("""
         ---------
@@ -23,7 +23,7 @@ fun togglePlayer(player: String): String {
     return when (player) {
         "X" -> "O"
         "O" -> "X"
-        else -> throw Exception("How are there now 3 of you?")
+        else -> throw Exception("How are there now 3 of you?") // Clones!!
     }
 }
 
@@ -33,7 +33,7 @@ fun getUserInput(str: String, player: String): String {
         val str2 = readLine()?.trim()?.split(" ")
 
         if(str2?.size != 2) {
-            println("You should enter numbers!")
+            println("You should enter numbers!") // I agree, numbers are better coordinates
             continue
         }
         try {
@@ -65,12 +65,12 @@ fun checkDiagonals(str: String): String? { // Gives me the win conditions for di
     }
     return null
 }
-fun checkColumns(str: String): String? {
+fun checkColumns(str: String): String? { // Checks the columns for wins
     for (col in 0..2) {
         if (getCol(str, col) == "XXX") {
             for (otherCol in 0..2) {
                 if (col != otherCol) {
-                    if (getCol(str, otherCol) == "OOO") {
+                    if (getCol(str, otherCol) == "OOO") { // How did they both win at the same time?
                         return "Impossible"
                     }
                 }
@@ -80,7 +80,7 @@ fun checkColumns(str: String): String? {
         else if (getCol(str, col) == "OOO") {
             for (otherCol in 0..2) {
                 if (col != otherCol) {
-                    if (getCol(str, otherCol) == "XXX") {
+                    if (getCol(str, otherCol) == "XXX") { // How did they both win at the same time?
                         return "Impossible"
                     }
                 }
@@ -95,7 +95,7 @@ fun checkRows(str: String): String? {
         if (getRow(str, row) == "XXX") {
             for (otherRow in 0..2) {
                 if (row != otherRow) {
-                    if (getRow(str, otherRow) == "OOO") {
+                    if (getRow(str, otherRow) == "OOO") { // How did they both win at the same time?
                         return "Impossible"
                     }
                 }
@@ -105,7 +105,7 @@ fun checkRows(str: String): String? {
         else if (getRow(str, row) == "OOO") {
             for (otherRow in 0..2) {
                 if (row != otherRow) {
-                    if (getRow(str, otherRow) == "XXX") {
+                    if (getRow(str, otherRow) == "XXX") { // How did they both win at the same time?
                         return "Impossible"
                     }
                 }
@@ -118,7 +118,7 @@ fun checkRows(str: String): String? {
 fun checkState(str: String): Boolean {
     val countX = str.filter { it == 'X' }.length
     val countO = str.filter { it == 'O' }.length
-    if (kotlin.math.abs(countO - countX) > 1) {
+    if (kotlin.math.abs(countO - countX) > 1) { // Someone had an extra go
         println("Impossible")
         return true
     }
@@ -126,29 +126,29 @@ fun checkState(str: String): Boolean {
     val rowResult = checkRows(str)
     if (rowResult != null) {
         println(rowResult)
-        return true
+        return true // Game over
     }
 
     val colResult = checkColumns(str)
     if (colResult != null) {
         println(colResult)
-        return true
+        return true // Game over
     }
 
     val diagResult = checkDiagonals(str)
     if (diagResult != null) {
         println(diagResult)
-        return true
+        return true // Game over
     }
 
-    if (str.contains("_")) {
+    return if (str.contains("_")) {
 
-        return false
+        false // Game not yet over
     } else {
         println("Draw")
-        return true
+        true // Game over
     }
-    return false
+    
 }
 fun getRow(str: String, row: Int): String { // returns row to be used later
     return "${str[row * 3]}${str[row * 3 + 1]}${str[row * 3 + 2]}"
