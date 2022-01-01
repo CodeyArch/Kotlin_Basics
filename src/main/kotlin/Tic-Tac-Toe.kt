@@ -29,6 +29,7 @@ fun togglePlayer(player: String): String {
 
 fun getUserInput(str: String, player: String): String {
     while(true) {
+
         print("Enter coordinates: ")
         val str2 = readLine()?.trim()?.split(" ")
 
