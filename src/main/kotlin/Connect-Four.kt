@@ -1,3 +1,4 @@
+// There are many duplicate lines that would fit better within a function
 fun main() {
     println("Connect Four")
     println("First player's name: ")
@@ -39,40 +40,61 @@ fun main() {
                         } else {
                             println("$player2\'s turn")
                         }
-                        val move = readLine()?.trim()?.replace("\\s+".toRegex(), "")?.lowercase() ?: "apple"
+                        val move = readLine()?.trim()?.replace("\\s+".toRegex(), "")?.lowercase() ?: "apple" // Inputs for columns/end
                         if (move == "end") {
                             println("Game over!")
-                            break@loop
+                            break@loop // Ends the full game loop
                         }
                         try {
                             if(move.toInt() !in 1..parts[1].toInt()) {
                                 println("The column number is out of range (1 - ${parts[1]})")
-                                continue
+                                continue // Continues the check loop
                             }
                         } catch(e: NumberFormatException) {
                             println("Incorrect column number")
-                            continue
+                            continue // Continues the check loop
                         }
                         val colNo: Int = move.toInt()
-                        val tempCol = getColumn(colNo, stateList)
-                        makeMove(toggleTurn, colNo, stateList, tempCol)
+                        val tempCol = getColumn(colNo, stateList) // Brings the state of columns in
+                        makeMove(toggleTurn, colNo, stateList, tempCol) // Places the input in the correct area, based on player
                         if (!tempCol.contains(0)){
                             println("Column $colNo is full")
                             continue
                         }
-                        toggleTurn = (if (toggleTurn == 1) {
+                        val winner = gameRows(toggleTurn, stateList) // Determines if a win condition has been met
+                        if (winner) {
+                            printBoard(rows, cols, stateList)
+                            if (toggleTurn == 1) { // Making sure the right player wins
+                                println("Player $player1 won")
+                            } else {
+                                println("Player $player2 won")
+                            }
+                            println("Game over!")
+                            break
+                        }
+                        toggleTurn = (if (toggleTurn == 1) { // Switches the player over
                             2
                         } else 1)
                         printBoard(rows, cols, stateList)
+                        var tieGame = true
+                        for (i in stateList){ // Checks for ties
+                            if (i.contains(0)){
+                                tieGame = false
+                            }
+                        }
 
+                        if (tieGame) {
+                            println("It is a draw")
+                            println("Game over!")
+                            break // Ends the game loop
+                        }
                     }
-
                 }
             }
         }
         else if(gameDimensions?.isEmpty() == true) {
             val parts = listOf("6", "7")
-            println("$player1 VS $player2") // Printing who is supposed to play
+            println("$player1 VS $player2") // Printing who is supposed to play [This is duplicate code from here to line 160]
             println("${parts[0]} X ${parts[1]} board") // Printing the size of the board
             val rows = parts[0].toInt() // Easier explicit use
             val cols = parts[1].toInt() // Easier explicit use
@@ -89,7 +111,7 @@ fun main() {
                 val move = readLine()?.trim()?.replace("\\s+".toRegex(), "")?.lowercase() ?: "apple"
                 if (move == "end") {
                     println("Game over!")
-                    break@loop
+                    break@loop // Ends the full game loop
                 }
                 try {
                     if(move.toInt() !in 1..parts[1].toInt()) {
@@ -107,10 +129,33 @@ fun main() {
                     println("Column $colNo is full")
                     continue
                 }
+                val winner = gameRows(toggleTurn, stateList)
+                if (winner) {
+                    printBoard(rows, cols, stateList)
+                    if (toggleTurn == 1) {
+                        println("Player $player1 won")
+                    } else {
+                        println("Player $player2 won")
+                    }
+                    println("Game over!")
+                    break
+                }
                 toggleTurn = (if (toggleTurn == 1) {
                     2
                 } else 1)
                 printBoard(rows, cols, stateList)
+                var tieGame = true
+                for (i in stateList){
+                    if (i.contains(0)){
+                        tieGame = false
+                    }
+                }
+
+                if (tieGame) {
+                    println("It is a draw")
+                    println("Game over!")
+                    break
+                }
 
             }
         } else {
@@ -122,7 +167,6 @@ fun printBoard(rows: Int, cols: Int, stateList: MutableList<MutableList<Int>>) {
     for (i in 1..cols) {
         print(" $i")
     }
-    //println()
     for (i in 0 until rows) {
         println()
         for (j in 0 until cols) {
@@ -153,7 +197,7 @@ fun printBoard(rows: Int, cols: Int, stateList: MutableList<MutableList<Int>>) {
         }
     }
 }
-fun makeMove(toggleTurn: Int, colNo: Int, stateList: MutableList<MutableList<Int>>, colList: MutableList<Int>)  { //: MutableList<Int>
+fun makeMove(toggleTurn: Int, colNo: Int, stateList: MutableList<MutableList<Int>>, colList: MutableList<Int>)  {
 
     var j = 0
 
@@ -172,6 +216,56 @@ fun getColumn(colNo: Int, stateList: MutableList<MutableList<Int>>) : MutableLis
     for (i in stateList.indices) tmpArr[i] =  stateList[i][colNo-1]
 
     return tmpArr
+}
+fun gameRows(player:Int, stateList: MutableList<MutableList<Int>>) :Boolean {
+
+    // Check for 4 across
+    for (row in stateList.indices) {
+        for (col in 0 until stateList[0].size - 4) {
+            if (stateList[row][col] == player &&
+                stateList[row][col + 1] == player &&
+                stateList[row][col + 2] == player &&
+                stateList[row][col + 3] == player
+            ) {
+                return true // Win condition met
+            }
+        }
+    }
+
+// Check for 4 up and down
+    for (row in 0 until stateList.size - 3) { // - 4
+        for (col in 0 until stateList[0].size) {
+            if (stateList[row + 0][col] == player &&
+                stateList[row + 1][col] == player &&
+                stateList[row + 2][col] == player &&
+                stateList[row + 3][col] == player) {
+                return true // Win condition met
+            }
+        }
+    }
+    // Check upward diagonal
+    for (row in 2 until stateList.size) {
+        for (col in 0 until stateList[0].size - 3) { // - 4
+            if (stateList[row][col] == player &&
+                stateList[row - 1][col + 1] == player &&
+                stateList[row - 2][col + 2] == player &&
+                stateList[row - 3][col + 3] == player) {
+                return true // Win condition met
+            }
+        }
+    }
+    // Check downward diagonal
+    for (row in 0 until stateList.size - 3) { // - 4
+        for (col in 0 until stateList[0].size - 3) { // - 4
+            if (stateList[row][col] == player &&
+                stateList[row + 1][col + 1] == player &&
+                stateList[row + 2][col + 2] == player &&
+                stateList[row + 3][col + 3] == player) {
+                return true // Win condition met
+            }
+        }
+    }
+    return false // No win conditions met
 }
 
 
