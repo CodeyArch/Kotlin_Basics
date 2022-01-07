@@ -1,4 +1,5 @@
 // There are many duplicate lines that would fit better within a function
+// Will not be continuing with this project, plan to rewrite this project in the future using functions more appropriately
 fun main() {
     println("Connect Four")
     println("First player's name: ")
@@ -134,6 +135,7 @@ fun main() {
                     printBoard(rows, cols, stateList)
                     if (toggleTurn == 1) {
                         println("Player $player1 won")
+
                     } else {
                         println("Player $player2 won")
                     }
