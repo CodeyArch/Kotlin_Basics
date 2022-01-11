@@ -25,6 +25,12 @@ class MineSweeper {
                 countMines++ // Increments to end the loop eventually
             }
         }
+
+        drawBoard() // Prints the board
+
+        checkMinesNear()
+    }
+    fun checkMinesNear() {
         for(x in listy.indices) {
             for(y in listy[x].indices) {
                 var minesNear = 0
@@ -38,10 +44,29 @@ class MineSweeper {
                     if (x < 8 && y < 8 && listy[x + 1][y + 1] == 15) minesNear++ // Checks the bottom right
                     if (x < 8 && y > 0 && listy[x + 1][y - 1] == 15) minesNear++ // Checks the bottom left
                     if(minesNear > 0) listy[x][y] = minesNear
+
                 }
             }
         }
-        drawBoard() // Prints the board
+    }
+    fun floodFill(x: Int, y: Int, free: Int) {
+        if(x > 8 || x < 0) {
+            return
+        }
+        if(y > 8 || y < 0) {
+            return
+        }
+        if(listy[x][y] in 1..8 || listy[x][y] == 25) {
+            return
+        }
+
+        listy[x][y] = free
+        floodFill(x + 1, y, free)
+        floodFill(x -1, y, free)
+        floodFill(x , y + 1, free)
+        floodFill(x , y - 1, free)
+        return
+
     }
     private fun drawBoard() {
         print(" |")
@@ -64,11 +89,17 @@ class MineSweeper {
                     15 -> {
                         print(".")
                     }
+                    16 -> {
+                        print("x")
+                    }
                     0 -> {
                         print(".")
                     }
                     20 -> {
                         print("*")
+                    }
+                    25 -> {
+                        print("/")
                     }
                     else -> {
                         print("$j")
@@ -85,23 +116,40 @@ class MineSweeper {
     }
     fun playGame() {
         while(true) {
-            println("Set/delete mine marks (x and y coordinates):")
-            val (xinput, yinput) = readLine()?.split(" ") ?: throw IllegalArgumentException("Got Invalid data, wanted positions")
+            println("Set/unset mine marks or claim a cell as free:")
+            val (xinput, yinput, claim) = readLine()?.split(" ") ?: throw IllegalArgumentException("Got Invalid data, wanted positions")
             val x = yinput.toInt() - 1 // I can format it the way I prefer this way
             val y = xinput.toInt() - 1
-
-            if(listy[x][y] == 15) {
-                listy[x][y] = 20 // I chose 20 as my marked number because I like the number, no other reason
-                correctMarks++
-                break
-            } else if (listy[x][y] in 1..8) {
-                println("There is a number here!")
-            } else if(listy[x][y] == 20) {
-                listy[x][y] = 0
-                break
-            } else {
-                listy[x][y] = 20 // Sets it to marked
-                break
+            if(claim == "mine") {
+                if(listy[x][y] == 15) {
+                    listy[x][y] = 20 // I chose 20 as my marked number because I like the number, no other reason
+                    correctMarks++
+                    break
+                } else if (listy[x][y] in 1..8) {
+                    println("There is a number here!")
+                } else if(listy[x][y] == 20) {
+                    listy[x][y] = 0
+                    break
+                } else {
+                    listy[x][y] = 20 // Sets it to marked
+                    break
+                }
+            } else if(claim == "free") {
+                if(listy[x][y] == 15) {
+                    println("You stepped on a mine and failed!")
+                    for(i in listy.indices) {
+                        for(j in listy[i].indices) {
+                            if(listy[i][j] == 15) {
+                                listy[i][j] = 16 // Makes the mines visible
+                            }
+                        }
+                    }
+                    gameEnd = true
+                    break
+                } else {
+                    floodFill(x, y, 25)
+                    break
+                }
             }
         }
         drawBoard()
