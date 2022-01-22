@@ -1,70 +1,134 @@
 import java.util.Scanner
+import kotlin.math.ceil
 
 fun main(args: Array<String>) {
     // args should be something like -datatype long
     val scanner = Scanner(System.`in`)
-    if(args[1] == "long") {
-        numSort(scanner)
-    } else if(args[1] == "line") {
-        lineSort(scanner)
-    } else if(args[1] == "word") {
-        wordSort(scanner)
+    if("-sortingType" in args) {
+        // args can now include -sortingType followed by "byCount". Otherwise, it sorts by natural
+        val naturalOrByCount = args.indexOf("-sortingType") + 1
+        if(args[naturalOrByCount] == "byCount") {
+            sortByCount(args, scanner)
+        } else {
+            sortNatural(args, scanner)
+        }
     } else {
-        wordSort(scanner)
+        sortNatural(args, scanner)
     }
 }
-fun numSort(scanner: Scanner) {
-    // This function takes endless number inputs and outputs the most common number and amount of times used
+fun sortByCount(args: Array<String>, scanner: Scanner) {
+    // Sorts list by lowest to the highest counts
+    val lineLongWord = args.indexOf("-dataType") + 1
+    if(args[lineLongWord] == "line") {
+        val lineList = lineList(scanner)
+        val countedMap = countInListStrings(lineList)
+        val sortedMap = countedMap.toSortedMap() // Sorts list descending order
+        println("Total lines: ${lineList.count()}")
+        printSorted(sortedMap, lineList)
+    } else if(args[lineLongWord] == "long") {
+        val numList = numList(scanner)
+        val countedMap = countInListNums(numList.sortedBy { it })
+        val sortedMap = countedMap.toList().sortedBy { (_, v) -> v }.toMap() // Sorts list descending order
+        println("Total numbers: ${numList.count()}")
+        for(i in sortedMap) {
+            // Duplicate code, needs refactoring in future
+            val percentageInMap = (i.value.toDouble()/numList.count())*100
+            if((percentageInMap - 0.5).toInt() == percentageInMap.toInt()) {
+                println("${i.key}: ${i.value} time(s), ${ceil(percentageInMap).toInt()}%")
+            } else {
+                println("${i.key}: ${i.value} time(s), ${percentageInMap.toInt()}%")
+            }
+        }
+    } else {
+        val wordList = wordList(scanner)
+        val countedMap = countInListStrings(wordList)
+        val sortedMap = countedMap.toList().sortedBy { (_, v) -> v }.toMap() // Sorts list descending order
+        println("Total words: ${wordList.count()}")
+        printSorted(sortedMap, wordList)
+    }
+}
+fun printSorted(sortedMap: Map<String, Int>, list: List<String>) {
+    // Function to reduce duplicate code. Checks the map and prints the required statements
+    for(i in sortedMap) {
+        val percentageInMap = (i.value.toDouble()/list.count())*100
+        if((percentageInMap - 0.5).toInt() == percentageInMap.toInt()) {
+            println("${i.key}: ${i.value} time(s), ${ceil(percentageInMap).toInt()}%")
+        } else {
+            println("${i.key}: ${i.value} time(s), ${percentageInMap.toInt()}%")
+        }
+    }
+}
+fun countInListNums(list: List<Int>): MutableMap<Int,Int> {
+    // Takes a list of ints and returns a map of ints and counts
+    val mapOfCounts = mutableMapOf<Int, Int>()
+    for(i in list) {
+        var count = 0
+        for (j in list) {
+            if (j == i) count++
+        }
+        mapOfCounts += i to count
+    }
+    return mapOfCounts
+}
+fun countInListStrings(list: List<String>): MutableMap<String, Int> {
+    // Takes a list of strings and returns a map of strings and counts
+    val mapOfCounts = mutableMapOf<String, Int>()
+    for(i in list) {
+        var count = 0
+        for (j in list) {
+            if (j == i) count++
+        }
+        mapOfCounts += i to count
+    }
+    return mapOfCounts
+}
+fun sortNatural(args: Array<String>, scanner: Scanner){
+    // Sorts by Numerical for nums and lexicographic for words and lines
+    val lineLongWord = args.indexOf("-dataType") + 1
+    if(args[lineLongWord] == "line") {
+        var lineList = lineList(scanner)
+        lineList = lineList.sorted()
+        println("Total lines: ${lineList.count()}")
+        println("Sorted data:")
+        for((counter) in lineList.withIndex()) {
+            println(lineList[counter])
+        }
+    } else if(args[lineLongWord] == "long") {
+        var numList = numList(scanner)
+        numList = numList.sorted()
+        println("Total numbers: ${numList.count()}")
+        println("Sorted data: ${numList.joinToString().replace(",", "")}")
+    } else {
+        var wordList = wordList(scanner)
+        wordList = wordList.sorted()
+        println("Total words: ${wordList.count()}")
+        println("Sorted data: ${wordList.joinToString().replace(",", "")}")
+    }
+}
+fun numList(scanner: Scanner): List<Int> {
+    // This function takes endless number inputs and returns a list
     val numList = mutableListOf<Int>()
     while(scanner.hasNext()) {
         val nums = scanner.nextInt()
         numList.add(nums)
     }
-    val largestNumber = numList.maxOrNull()
-    var largestNumberCount = 0
-    for(i in numList) {
-        if(i == largestNumber) {
-            largestNumberCount++
-        }
-    }
-    val numPercentage = (largestNumberCount.toDouble()/numList.count()) * 100
-    println("Total numbers: ${numList.count()}")
-    println("The greatest number: $largestNumber ($largestNumberCount time(s), ${numPercentage.toInt()}%).")
+    return numList
 }
-fun lineSort(scanner: Scanner) {
-    // This function takes endless line inputs and outputs the most common line and amount of times used
+fun lineList(scanner: Scanner): List<String> {
+    // This function takes endless line inputs and returns a list
     val lineList = mutableListOf<String>()
     while(scanner.hasNext()) {
         val lines = scanner.nextLine()
         lineList.add(lines)
     }
-    val longestLine = lineList.maxByOrNull { it.length }
-    val lineCount = getLargest(lineList, longestLine)
-    val linePercentage = (lineCount.toDouble()/lineList.count())*100
-    println("Total lines: ${lineList.count()}")
-    println("The longest line:")
-    println("$longestLine")
-    println("($lineCount time(s), ${linePercentage.toInt()}%).")
+    return lineList
 }
-fun wordSort(scanner: Scanner) {
-    // This function takes endless word inputs and outputs the most common word and amount of times used
+fun wordList(scanner: Scanner): List<String>{
+    // This function takes endless word inputs and returns a list
     val wordList = mutableListOf<String>()
     while (scanner.hasNext()) {
         val words = scanner.next()
         wordList.add(words)
     }
-    val longestWord = wordList.maxByOrNull { it.length }
-    val wordCount = getLargest(wordList, longestWord)
-    val wordPercentage = (wordCount.toDouble() / wordList.count()) * 100
-    println("Total words: ${wordList.count()}")
-    println("The longest word: $longestWord ($wordCount time(s), ${wordPercentage.toInt()}%).")
-}
-fun getLargest(list: List<String>, longest: String?): Int {
-    var count = 0
-    for(i in list) {
-        if(i == longest) {
-            count++
-        }
-    }
-    return count
+    return wordList
 }
