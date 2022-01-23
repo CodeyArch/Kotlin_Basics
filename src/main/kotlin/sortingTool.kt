@@ -1,16 +1,27 @@
-import java.util.Scanner
+import java.util.*
 import kotlin.math.ceil
 
 fun main(args: Array<String>) {
     // args should be something like -datatype long
+    if(args.count() > 4) {
+        for (i in 4..args.count()) {
+            try {
+                println(" \"${args[i]}\" is not a valid parameter. It will be skipped.")
+            } catch (_: ArrayIndexOutOfBoundsException) {}
+        }
+    }
     val scanner = Scanner(System.`in`)
     if("-sortingType" in args) {
         // args can now include -sortingType followed by "byCount". Otherwise, it sorts by natural
         val naturalOrByCount = args.indexOf("-sortingType") + 1
-        if(args[naturalOrByCount] == "byCount") {
-            sortByCount(args, scanner)
-        } else {
-            sortNatural(args, scanner)
+        try {
+            if(args[naturalOrByCount] == "byCount") {
+                sortByCount(args, scanner)
+            } else {
+                sortNatural(args, scanner)
+            }
+        } catch (e: ArrayIndexOutOfBoundsException) {
+            println("No sorting type defined!")
         }
     } else {
         sortNatural(args, scanner)
@@ -26,9 +37,12 @@ fun sortByCount(args: Array<String>, scanner: Scanner) {
         println("Total lines: ${lineList.count()}")
         printSorted(sortedMap, lineList)
     } else if(args[lineLongWord] == "long") {
-        val numList = numList(scanner)
+        val (numList, wordList) = numList(scanner)
         val countedMap = countInListNums(numList.sortedBy { it })
         val sortedMap = countedMap.toList().sortedBy { (_, v) -> v }.toMap() // Sorts list descending order
+        for(i in wordList) {
+            println("\"$i\" is not a long. It will be skipped. ")
+        }
         println("Total numbers: ${numList.count()}")
         for(i in sortedMap) {
             // Duplicate code, needs refactoring in future
@@ -85,34 +99,47 @@ fun countInListStrings(list: List<String>): MutableMap<String, Int> {
 fun sortNatural(args: Array<String>, scanner: Scanner){
     // Sorts by Numerical for nums and lexicographic for words and lines
     val lineLongWord = args.indexOf("-dataType") + 1
-    if(args[lineLongWord] == "line") {
-        var lineList = lineList(scanner)
-        lineList = lineList.sorted()
-        println("Total lines: ${lineList.count()}")
-        println("Sorted data:")
-        for((counter) in lineList.withIndex()) {
-            println(lineList[counter])
+    try {
+        if(args[lineLongWord] == "line") {
+            var lineList = lineList(scanner)
+            lineList = lineList.sorted()
+            println("Total lines: ${lineList.count()}")
+            println("Sorted data:")
+            for((counter) in lineList.withIndex()) {
+                println(lineList[counter])
+            }
+        } else if(args[lineLongWord] == "long") {
+            var (numList, wordList) = numList(scanner)
+            numList = numList.sorted() as MutableList<Int>
+            for(i in wordList) {
+                println("\"$i\" is not a long. It will be skipped. ")
+            }
+            println("Total numbers: ${numList.count()}")
+            println("Sorted data: ${numList.joinToString().replace(",", "")}")
+        } else if(args[lineLongWord] == "word") {
+            var wordList = wordList(scanner)
+            wordList = wordList.sorted()
+            println("Total words: ${wordList.count()}")
+            println("Sorted data: ${wordList.joinToString().replace(",", "")}")
         }
-    } else if(args[lineLongWord] == "long") {
-        var numList = numList(scanner)
-        numList = numList.sorted()
-        println("Total numbers: ${numList.count()}")
-        println("Sorted data: ${numList.joinToString().replace(",", "")}")
-    } else {
-        var wordList = wordList(scanner)
-        wordList = wordList.sorted()
-        println("Total words: ${wordList.count()}")
-        println("Sorted data: ${wordList.joinToString().replace(",", "")}")
+    } catch (e: IndexOutOfBoundsException) {
+        println("No data type defined!")
     }
 }
-fun numList(scanner: Scanner): List<Int> {
+fun numList(scanner: Scanner): Pair<MutableList<Int>, MutableList<String>> {
     // This function takes endless number inputs and returns a list
     val numList = mutableListOf<Int>()
-    while(scanner.hasNext()) {
-        val nums = scanner.nextInt()
-        numList.add(nums)
+    val notNums = mutableListOf<String>()
+    while (scanner.hasNext()) {
+        try {
+            val nums = scanner.nextInt()
+            numList.add(nums)
+        } catch (e: InputMismatchException) {
+            val words = scanner.next()
+            notNums.add(words)
+        }
     }
-    return numList
+    return Pair(numList, notNums)
 }
 fun lineList(scanner: Scanner): List<String> {
     // This function takes endless line inputs and returns a list
