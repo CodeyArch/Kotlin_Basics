@@ -1,16 +1,58 @@
 import java.util.*
 import kotlin.math.ceil
+import java.io.File
+import java.io.PrintStream
 
-fun main(args: Array<String>) {
-    // args should be something like -datatype long
-    if(args.count() > 4) {
-        for (i in 4..args.count()) {
-            try {
-                println(" \"${args[i]}\" is not a valid parameter. It will be skipped.")
-            } catch (_: ArrayIndexOutOfBoundsException) {}
+class TextIO(outputFilename: String?, inputFilename: String?) {
+    private val outputFile: PrintStream = if (outputFilename == null) {
+        System.out
+    } else {
+        PrintStream(File(outputFilename))
+    }
+    val inputFile: Scanner = if (inputFilename == null) {
+        Scanner(System.`in`)
+    } else {
+        Scanner(File(inputFilename))
+    }
+    fun out(message: String) = outputFile.println(message)
+    fun input(): String = inputFile.next()
+    fun error(message: String) = println(message)
+
+    companion object {
+        lateinit var io: TextIO
+            private set
+
+        fun initialise(outputFilename: String?, inputFilename: String?) {
+            io = TextIO(outputFilename, inputFilename)
         }
     }
-    val scanner = Scanner(System.`in`)
+}
+fun main(args: Array<String>) {
+    // args should be something like -datatype long
+    val acceptedArgs = mutableListOf("long", "line", "word", "-inputFile", "-sortingType",
+        "-dataType", "natural", "byCount", "-outputFile")
+
+    for (i in 0..args.count()) {
+        try {
+            if (args[i] !in acceptedArgs) {
+                if (args[i-1] != "-outputFile" && args[i-1] != "-inputFile") {
+                    TextIO.io.error(" \"${args[i]}\" is not a valid parameter. It will be skipped.")
+                }
+            }
+        } catch (_: ArrayIndexOutOfBoundsException) {}
+    }
+    val outputFilename = if ("-outputFile" in args) {
+        args[args.indexOf("-outputFile") + 1]
+    } else {
+        null
+    }
+    val inputFilename = if ("-inputFile" in args) {
+        args[args.indexOf("-inputFile") + 1]
+    } else {
+        null
+    }
+    TextIO.initialise(outputFilename, inputFilename)
+    val scanner = TextIO.io.inputFile
     if("-sortingType" in args) {
         // args can now include -sortingType followed by "byCount". Otherwise, it sorts by natural
         val naturalOrByCount = args.indexOf("-sortingType") + 1
@@ -21,7 +63,7 @@ fun main(args: Array<String>) {
                 sortNatural(args, scanner)
             }
         } catch (e: ArrayIndexOutOfBoundsException) {
-            println("No sorting type defined!")
+            TextIO.io.error("No sorting type defined!")
         }
     } else {
         sortNatural(args, scanner)
@@ -34,41 +76,41 @@ fun sortByCount(args: Array<String>, scanner: Scanner) {
         val lineList = lineList(scanner)
         val countedMap = countInListStrings(lineList)
         val sortedMap = countedMap.toSortedMap() // Sorts list descending order
-        println("Total lines: ${lineList.count()}")
+        ("Total lines: ${lineList.count()}")
         printSorted(sortedMap, lineList)
     } else if(args[lineLongWord] == "long") {
         val (numList, wordList) = numList(scanner)
         val countedMap = countInListNums(numList.sortedBy { it })
         val sortedMap = countedMap.toList().sortedBy { (_, v) -> v }.toMap() // Sorts list descending order
         for(i in wordList) {
-            println("\"$i\" is not a long. It will be skipped. ")
+            TextIO.io.error("\"$i\" is not a long. It will be skipped. ")
         }
-        println("Total numbers: ${numList.count()}")
+        TextIO.io.out("Total numbers: ${numList.count()}")
         for(i in sortedMap) {
             // Duplicate code, needs refactoring in future
             val percentageInMap = (i.value.toDouble()/numList.count())*100
             if((percentageInMap - 0.5).toInt() == percentageInMap.toInt()) {
-                println("${i.key}: ${i.value} time(s), ${ceil(percentageInMap).toInt()}%")
+                TextIO.io.out("${i.key}: ${i.value} time(s), ${ceil(percentageInMap).toInt()}%")
             } else {
-                println("${i.key}: ${i.value} time(s), ${percentageInMap.toInt()}%")
+                TextIO.io.out("${i.key}: ${i.value} time(s), ${percentageInMap.toInt()}%")
             }
         }
     } else {
         val wordList = wordList(scanner)
         val countedMap = countInListStrings(wordList)
         val sortedMap = countedMap.toList().sortedBy { (_, v) -> v }.toMap() // Sorts list descending order
-        println("Total words: ${wordList.count()}")
+        TextIO.io.out("Total words: ${wordList.count()}")
         printSorted(sortedMap, wordList)
     }
 }
 fun printSorted(sortedMap: Map<String, Int>, list: List<String>) {
     // Function to reduce duplicate code. Checks the map and prints the required statements
-    for(i in sortedMap) {
+    sortedMap.forEach { i ->
         val percentageInMap = (i.value.toDouble()/list.count())*100
         if((percentageInMap - 0.5).toInt() == percentageInMap.toInt()) {
-            println("${i.key}: ${i.value} time(s), ${ceil(percentageInMap).toInt()}%")
+            TextIO.io.out("${i.key}: ${i.value} time(s), ${ceil(percentageInMap).toInt()}%")
         } else {
-            println("${i.key}: ${i.value} time(s), ${percentageInMap.toInt()}%")
+            TextIO.io.out("${i.key}: ${i.value} time(s), ${percentageInMap.toInt()}%")
         }
     }
 }
@@ -103,27 +145,27 @@ fun sortNatural(args: Array<String>, scanner: Scanner){
         if(args[lineLongWord] == "line") {
             var lineList = lineList(scanner)
             lineList = lineList.sorted()
-            println("Total lines: ${lineList.count()}")
-            println("Sorted data:")
+            TextIO.io.out("Total lines: ${lineList.count()}")
+            TextIO.io.out("Sorted data:")
             for((counter) in lineList.withIndex()) {
-                println(lineList[counter])
+                TextIO.io.out(lineList[counter])
             }
         } else if(args[lineLongWord] == "long") {
             var (numList, wordList) = numList(scanner)
             numList = numList.sorted() as MutableList<Int>
             for(i in wordList) {
-                println("\"$i\" is not a long. It will be skipped. ")
+                TextIO.io.error("\"$i\" is not a long. It will be skipped. ")
             }
-            println("Total numbers: ${numList.count()}")
-            println("Sorted data: ${numList.joinToString().replace(",", "")}")
+            TextIO.io.out("Total numbers: ${numList.count()}")
+            TextIO.io.out("Sorted data: ${numList.joinToString().replace(",", "")}")
         } else if(args[lineLongWord] == "word") {
             var wordList = wordList(scanner)
             wordList = wordList.sorted()
-            println("Total words: ${wordList.count()}")
-            println("Sorted data: ${wordList.joinToString().replace(",", "")}")
+            TextIO.io.out("Total words: ${wordList.count()}")
+            TextIO.io.out("Sorted data: ${wordList.joinToString().replace(",", "")}")
         }
     } catch (e: IndexOutOfBoundsException) {
-        println("No data type defined!")
+        TextIO.io.error("No data type defined!")
     }
 }
 fun numList(scanner: Scanner): Pair<MutableList<Int>, MutableList<String>> {
@@ -135,7 +177,7 @@ fun numList(scanner: Scanner): Pair<MutableList<Int>, MutableList<String>> {
             val nums = scanner.nextInt()
             numList.add(nums)
         } catch (e: InputMismatchException) {
-            val words = scanner.next()
+            val words = TextIO.io.input()
             notNums.add(words)
         }
     }
@@ -150,11 +192,11 @@ fun lineList(scanner: Scanner): List<String> {
     }
     return lineList
 }
-fun wordList(scanner: Scanner): List<String>{
+fun wordList(scanner: Scanner): List<String> {
     // This function takes endless word inputs and returns a list
     val wordList = mutableListOf<String>()
     while (scanner.hasNext()) {
-        val words = scanner.next()
+        val words = TextIO.io.input()
         wordList.add(words)
     }
     return wordList
