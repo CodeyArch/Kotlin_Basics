@@ -4,43 +4,32 @@ import java.io.File
 import java.io.PrintStream
 
 class TextIO(outputFilename: String?, inputFilename: String?) {
+    // Checks if we're using files to determine where inputs come from and where outputs go
     private val outputFile: PrintStream = if (outputFilename == null) {
         System.out
     } else {
-        PrintStream(File(outputFilename))
+        PrintStream(File(outputFilename)) // Writes everything to file
     }
     val inputFile: Scanner = if (inputFilename == null) {
         Scanner(System.`in`)
     } else {
-        Scanner(File(inputFilename))
+        Scanner(File(inputFilename)) // Takes input from file
     }
     fun out(message: String) = outputFile.println(message)
     fun input(): String = inputFile.next()
-    fun error(message: String) = println(message)
+    fun error(message: String) = println(message) // For console errors
 
     companion object {
         lateinit var io: TextIO
             private set
-
+        // To initialise IO to be used everywhere
         fun initialise(outputFilename: String?, inputFilename: String?) {
             io = TextIO(outputFilename, inputFilename)
         }
     }
 }
 fun main(args: Array<String>) {
-    // args should be something like -datatype long
-    val acceptedArgs = mutableListOf("long", "line", "word", "-inputFile", "-sortingType",
-        "-dataType", "natural", "byCount", "-outputFile")
-
-    for (i in 0..args.count()) {
-        try {
-            if (args[i] !in acceptedArgs) {
-                if (args[i-1] != "-outputFile" && args[i-1] != "-inputFile") {
-                    TextIO.io.error(" \"${args[i]}\" is not a valid parameter. It will be skipped.")
-                }
-            }
-        } catch (_: ArrayIndexOutOfBoundsException) {}
-    }
+    // Determines if we're using files in any capacity
     val outputFilename = if ("-outputFile" in args) {
         args[args.indexOf("-outputFile") + 1]
     } else {
@@ -53,8 +42,19 @@ fun main(args: Array<String>) {
     }
     TextIO.initialise(outputFilename, inputFilename)
     val scanner = TextIO.io.inputFile
+    val acceptedArgs = mutableListOf("long", "line", "word", "-inputFile", "-sortingType",
+        "-dataType", "natural", "byCount", "-outputFile")
+    for (i in 0..args.count()) { // Checks for valid args
+        try {
+            if (args[i] !in acceptedArgs) {
+                if (args[i-1] != "-outputFile" && args[i-1] != "-inputFile") {
+                    TextIO.io.error(" \"${args[i]}\" is not a valid parameter. It will be skipped.")
+                }
+            }
+        } catch (_: ArrayIndexOutOfBoundsException) {} // Just holds exceptions
+    }
     if("-sortingType" in args) {
-        // args can now include -sortingType followed by "byCount". Otherwise, it sorts by natural
+        // args can include -sortingType followed by "byCount". Otherwise, it sorts by natural
         val naturalOrByCount = args.indexOf("-sortingType") + 1
         try {
             if(args[naturalOrByCount] == "byCount") {
@@ -68,6 +68,8 @@ fun main(args: Array<String>) {
     } else {
         sortNatural(args, scanner)
     }
+    // Closing scanner to prevent UninitializedPropertyAccessException
+    scanner.close()
 }
 fun sortByCount(args: Array<String>, scanner: Scanner) {
     // Sorts list by lowest to the highest counts
@@ -76,7 +78,7 @@ fun sortByCount(args: Array<String>, scanner: Scanner) {
         val lineList = lineList(scanner)
         val countedMap = countInListStrings(lineList)
         val sortedMap = countedMap.toSortedMap() // Sorts list descending order
-        ("Total lines: ${lineList.count()}")
+        TextIO.io.out("Total lines: ${lineList.count()}")
         printSorted(sortedMap, lineList)
     } else if(args[lineLongWord] == "long") {
         val (numList, wordList) = numList(scanner)
