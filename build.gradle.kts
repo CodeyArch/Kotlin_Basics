@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.6.10-RC"
     application
 }
 
@@ -13,8 +13,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
-    implementation(kotlin("script-runtime"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.6.0")
+    implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.6.0")
 }
 
 tasks.test {

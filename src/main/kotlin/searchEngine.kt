@@ -52,7 +52,7 @@ fun createIndices(invertedIndex: MutableMap<String, MutableList<Int>>, dataInput
     if (dataInput != null) {
         for (strings in dataInput) {
             if (strings in invertedIndex.keys) {
-                for (index in invertedIndex[strings]!!) {
+                for (index in invertedIndex[strings] ?: error("Nothing here") ) {
                     if (indices.isEmpty()) {
                         indices.add(index)
                     } else{
@@ -117,7 +117,7 @@ fun findAll(invertedIndex: MutableMap<String, MutableList<Int>>, searchableInput
                 indices = if (id == 0) {
                     invertedIndex[dataInput[id]]!!
                 } else {
-                    val tempIds = invertedIndex[dataInput[id]]!!
+                    val tempIds = invertedIndex[dataInput[id]] ?: error("Nothing here")
                     indices.intersect(tempIds.toSet()).toMutableList()
                 }
             }
