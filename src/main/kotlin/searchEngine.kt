@@ -1,18 +1,35 @@
-@file:Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-import java.io.File
 
+import java.io.File
+import java.io.FileNotFoundException
+
+//
 // Dataset used will be first name, last name, optional email
 fun main(args: Array<String>) {
+    // Validation and assignment of file
     val dataFile = if ("--data" in args) {
-        args[args.indexOf("--data") + 1]
+        try {
+            args[args.indexOf("--data") + 1]
+        } catch (e: ArrayIndexOutOfBoundsException) {
+            println("No file attached")
+            null
+        }
     } else {
         null
     }
-    searcher(dataFile)
+    if (dataFile != null) {
+        searcher(dataFile)
+    }
 }
 fun searcher(dataFile: String?) {
     var searchEnd = false
-    val searchableInput = File(dataFile).readLines()
+    var searchableInput = listOf<String>()
+    // Input validation
+    try {
+        searchableInput = File(dataFile ?: error("No file")).readLines()
+    } catch (e: FileNotFoundException) {
+        println("Invalid File")
+        searchEnd = true // Ends program
+    }
     val invertedIndex = index(searchableInput)
     while (!searchEnd) {
         // Endless loop for easy searching
@@ -45,6 +62,7 @@ fun searchType(invertedIndex: MutableMap<String, MutableList<Int>>, searchableIn
         "ANY" -> findAny(invertedIndex, searchableInput)
         "ALL" -> findAll(invertedIndex, searchableInput)
         "NONE" -> findNone(invertedIndex, searchableInput)
+        else -> println("Search type not found")
     }
 }
 fun createIndices(invertedIndex: MutableMap<String, MutableList<Int>>, dataInput: List<String>?): MutableList<Int> {
@@ -115,7 +133,7 @@ fun findAll(invertedIndex: MutableMap<String, MutableList<Int>>, searchableInput
             if (dataInput[id] in invertedIndex.keys) {
                 // Checks it matches a key and saves the indexes
                 indices = if (id == 0) {
-                    invertedIndex[dataInput[id]]!!
+                    invertedIndex[dataInput[id]] ?: error("Nothing here")
                 } else {
                     val tempIds = invertedIndex[dataInput[id]] ?: error("Nothing here")
                     indices.intersect(tempIds.toSet()).toMutableList()

@@ -7,7 +7,6 @@ fun main() {
     println("Second player's name: ")
     val player2 = readLine() // Gets second player
     var toggleTurn = 1
-
     loop@while(true) {
         val regex = Regex("(\\d+) *[xX] *(\\d+)") // Regex to allow strings such as "9 x 9" and "9X9"
         println("Set the board dimensions (Rows x Columns)")
@@ -83,7 +82,6 @@ fun main() {
                                 tieGame = false
                             }
                         }
-
                         if (tieGame) {
                             println("It is a draw")
                             println("Game over!")
@@ -101,8 +99,6 @@ fun main() {
             val cols = parts[1].toInt() // Easier explicit use
             val stateList = MutableList(rows) { MutableList(cols) { 0 } } // Using this to check positions
             printBoard(rows,cols, stateList)
-
-
             while(true) {
                 if(toggleTurn == 1) {
                     println("$player1\'s turn")
@@ -152,13 +148,11 @@ fun main() {
                         tieGame = false
                     }
                 }
-
                 if (tieGame) {
                     println("It is a draw")
                     println("Game over!")
                     break
                 }
-
             }
         } else {
             println("Invalid input") // Letters and such break the game, we want only numbers
@@ -200,27 +194,22 @@ fun printBoard(rows: Int, cols: Int, stateList: MutableList<MutableList<Int>>) {
     }
 }
 fun makeMove(toggleTurn: Int, colNo: Int, stateList: MutableList<MutableList<Int>>, colList: MutableList<Int>)  {
-
-    var j = 0
-
+    var count = 0
     for (i in colList.indices.reversed() ) {
 
         if (colList[i] == 0) {
             stateList[i][colNo-1] = toggleTurn // 1 == "o" and 2 == "*"
             break
         }
-        j++
+        count++
     }
 }
 fun getColumn(colNo: Int, stateList: MutableList<MutableList<Int>>) : MutableList<Int> {
     val tmpArr = MutableList(stateList.size) { 0 }
-
     for (i in stateList.indices) tmpArr[i] =  stateList[i][colNo-1]
-
     return tmpArr
 }
 fun gameRows(player:Int, stateList: MutableList<MutableList<Int>>) :Boolean {
-
     // Check for 4 across
     for (row in stateList.indices) {
         for (col in 0 until stateList[0].size - 4) {
@@ -233,8 +222,7 @@ fun gameRows(player:Int, stateList: MutableList<MutableList<Int>>) :Boolean {
             }
         }
     }
-
-// Check for 4 up and down
+    // Check for 4 up and down
     for (row in 0 until stateList.size - 3) { // - 4
         for (col in 0 until stateList[0].size) {
             if (stateList[row + 0][col] == player &&
