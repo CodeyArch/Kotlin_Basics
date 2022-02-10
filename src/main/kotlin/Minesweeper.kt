@@ -62,15 +62,11 @@ class MineSweeper {
             return
         } // Acts as the walls to bounce away from
         listy[x][y].default = free // Changes the value to our free value
-        openNumbers(x, y)
+        openNumbers(x, y) // Open numbers in an 8 by 8 area around space
         floodFill(x + 1, y, free)
-        openNumbers(x + 1, y) // Opens nearby numbers if there are any
         floodFill(x -1, y, free)
-        openNumbers(x - 1, y)
         floodFill(x,y + 1, free)
-        openNumbers(x, y + 1)
         floodFill(x,y - 1, free)
-        openNumbers(x, y - 1)
         return
     }
     private fun openNumbers(x: Int, y: Int) {
